@@ -31,6 +31,12 @@ loadcaffe.load = function(prototxt_name, binary_name, cuda_package)
       if cuda_package == 'ccn2' then
         w = w:transpose(1,4):transpose(1,3):transpose(1,2)
       end
+
+      if item[2].groups then
+         -- Do the magic here
+      end
+
+
       item[2].weight:copy(w)
       item[2].bias:copy(bias)
     end

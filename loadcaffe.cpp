@@ -156,15 +156,17 @@ void convertProtoToLuaV1(const caffe::NetParameter &netparam, const char* lua_na
         }
         else if(cuda_package_type == NN)
         {
-          if(groups != 1)
-          {
-            std::cout << "nn supports no groups!\n";
-            break;
-          }
           char buf[1024];
           sprintf(buf, "nn.SpatialConvolutionMM(%d, %d, %d, %d, %d, %d, %d, %d)",
               nInputPlane, nOutputPlane, kW, kH, dW, dH, pad_w, pad_h);
           lines.emplace_back(layer.name(), buf);
+          if(groups != 1)
+          {
+            char buf[1024];
+            sprintf(buf, "model[#model][2].groups = %d\n", groups);
+            lines.emplace_back("modif", buf);
+            break;
+          }
         }
         else
         {
@@ -305,8 +307,13 @@ void convertProtoToLuaV1(const caffe::NetParameter &netparam, const char* lua_na
       }
     }
     if(!lines.empty())
-      for(auto& it: lines)
-        ofs << "table.insert(model, {'" << it.first << "', " << it.second << "})\n";
+      for(auto& it: lines) {
+        if(it.first != "modif"){
+          ofs << "table.insert(model, {'" << it.first << "', " << it.second << "})\n";
+        } else {
+          ofs << it.second ;
+        }
+      }
     else
     {
       ofs << "-- warning: module '" << layer.name() << "' not found\n";
@@ -386,15 +393,17 @@ void convertProtoToLuaV2(const caffe::NetParameter &netparam, const char* lua_na
       }
       else if(cuda_package_type == NN)
       {
-        if(groups != 1)
-        {
-          std::cout << "nn supports no groups!\n";
-          break;
-        }
         char buf[1024];
         sprintf(buf, "nn.SpatialConvolutionMM(%d, %d, %d, %d, %d, %d, %d, %d)",
             nInputPlane, nOutputPlane, kW, kH, dW, dH, pad_w, pad_h);
         lines.emplace_back(layer.name(), buf);
+        if(groups != 1)
+          {
+            char buf[1024];
+            sprintf(buf, "model[#model][2].groups = %d\n", groups);
+            lines.emplace_back("modif", buf);
+            break;
+          }
       }
       else
       {
@@ -505,8 +514,13 @@ void convertProtoToLuaV2(const caffe::NetParameter &netparam, const char* lua_na
     }
 
     if(!lines.empty())
-      for(auto& it: lines)
-        ofs << "table.insert(model, {'" << it.first << "', " << it.second << "})\n";
+      for(auto& it: lines) {
+        if(it.first != "modif"){
+          ofs << "table.insert(model, {'" << it.first << "', " << it.second << "})\n";
+        } else {
+          ofs << it.second ;
+        }
+      }
     else
     {
       ofs << "-- warning: module '" << layer.name() << "' not found\n";
