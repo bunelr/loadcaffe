@@ -31,6 +31,30 @@ loadcaffe.load = function(prototxt_name, binary_name, cuda_package)
       if cuda_package == 'ccn2' then
         w = w:transpose(1,4):transpose(1,3):transpose(1,2)
       end
+
+      if item[2].groups then
+         -- Do the magic here
+         local nb_groups = item[2].groups
+         local input_group_size = w:size(2)
+         local output_group_size = w:size(1) / nb_groups
+         local grouped_w_size = w:size()
+
+         grouped_w_size[2] = nb_groups * input_group_size
+         local grouped_w = torch.FloatTensor(grouped_w_size)
+         grouped_w:zero()
+
+         for g=1, nb_groups do
+            -- output_planes | input_planes | W | H
+            local to_fill = grouped_w:narrow(1, 1+(g-1)*output_group_size, output_group_size)
+                                     :narrow(2, 1+(g-1)*input_group_size, input_group_size)
+            local filler = w:narrow(1, 1+(g-1)*output_group_size, output_group_size)
+            to_fill:copy(filler)
+         end
+
+         w = grouped_w
+      end
+
+
       item[2].weight:copy(w)
       item[2].bias:copy(bias)
     end
