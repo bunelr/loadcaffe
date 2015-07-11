@@ -1,6 +1,16 @@
 loadcaffe
 =========
 
+This is a fork by @bunelr.
+The role of this fork is to be able to load Caffe layer making use of the "groups" convolution parameters. It works with a hack so I won't be PRing it.
+
+You can use it if you don't intend to finetune the network because the groups are not enforced, they just are loaded properly.
+
+
+Original Readme.md follows:
+=========
+
+
 Load Caffe networks in Torch7
 
 There is no Caffe dependency, only protobuf has to be installed. In Ubuntu do:
